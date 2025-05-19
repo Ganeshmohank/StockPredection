@@ -17,6 +17,5 @@ def suggest_portfolio(req: PortfolioRequest):
             "sector_allocations": sector_allocations
         }
     except Exception as e:
-        # Log actual error message for debugging
         print("❌ ERROR:", e)
-        raise HTTPException(status_code=400, detail=f"Portfolio generation failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"{str(e)}")

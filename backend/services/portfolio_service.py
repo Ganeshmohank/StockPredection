@@ -17,6 +17,17 @@ def get_5_day_avg(ticker):
         raise ValueError(f"Unable to fetch 5-day price history for {ticker}: {str(e)}")
 
 def generate_portfolio(amount: float, strategies):
+    # ✅ Validation for amount
+    if amount <= 0:
+        raise ValueError("Investment must be greater than zero.")
+
+    # ✅ Validation for total allocation weight
+    total_weight = sum(entry.weight for entry in strategies)
+    if total_weight > 1.0:
+        raise ValueError("Total allocation must not exceed 100%.")
+    if total_weight == 0:
+        raise ValueError("Please allocate at least one category.")
+
     tickers_by_strategy = {}
     for entry in strategies:
         strat_key = entry.name.lower()
@@ -71,7 +82,7 @@ def generate_portfolio(amount: float, strategies):
             })
             total += value
 
-    # Compute total portfolio history over 5 days
+    # 5-day portfolio trend
     history = [round(sum(stock["trend"][i] for stock in portfolio) / len(portfolio), 2) for i in range(5)]
 
     # Save to json-server

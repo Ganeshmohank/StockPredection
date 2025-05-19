@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import "./App.css";
 import { Line, Pie } from "react-chartjs-2";
@@ -21,6 +21,11 @@ const STRATEGY_INFO = {
   technology: "Tech sector leaders"
 };
 
+// ✅ Reusable component for error display
+function ErrorMessage({ text }) {
+  return <div className="error-message">{text}</div>;
+}
+
 export default function App() {
   const [amount, setAmount] = useState(5000);
   const [weights, setWeights] = useState({});
@@ -42,12 +47,24 @@ export default function App() {
   };
 
   const handleSubmit = async () => {
+    // Frontend validations
+    if (amount <= 0) {
+      setError("Investment must be greater than zero.");
+      return;
+    }
+
     const selected = Object.entries(weights)
       .filter(([_, w]) => w > 0)
       .map(([name, weight]) => ({ name, weight }));
 
     if (selected.length === 0) {
       setError("Please select at least one strategy with non-zero weight.");
+      return;
+    }
+
+    const totalWeight = selected.reduce((sum, s) => sum + s.weight, 0);
+    if (totalWeight > 1.0) {
+      setError("Total allocation must not exceed 100%.");
       return;
     }
 
@@ -134,13 +151,18 @@ export default function App() {
 
         <div className="main-panel">
           <label>Investment Amount ($)</label>
-          <input type="number" value={amount} min={5000} onChange={(e) => setAmount(Number(e.target.value))} />
+          <input
+            type="number"
+            value={amount}
+            min={0}
+            onChange={(e) => setAmount(Number(e.target.value))}
+          />
 
           <button onClick={handleSubmit} disabled={loading}>
             {loading ? "Analyzing..." : "Get Portfolio"}
           </button>
 
-          {error && <p className="error">{error}</p>}
+          {error && <ErrorMessage text={error} />}
           {loading && <div className="loading"><div className="spinner" />Analyzing...</div>}
 
           {result && (
